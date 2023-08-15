@@ -1,13 +1,11 @@
 const mongoose = require('mongoose');
+const { compareSync } = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
-      validate: {
-        validator: (username) => User.doesNotExist({ username }),
-        message: 'Username already exist.',
-      },
+      required: true,
     },
     email: {
       type: String,
@@ -23,12 +21,19 @@ const userSchema = new mongoose.Schema(
     isVerificated: {
       type: Boolean,
     },
-    verificationToken: {
-      type: Number,
-    },
   },
   { timestamps: true }
 );
+
+// custom validator for userSchema; check if user exist or not
+userSchema.statics.doesNotExist = async function (field) {
+  return (await this.where(field).countDocuments()) === 0;
+};
+
+// compare passwords
+userSchema.methods.comparePasswords = function (password) {
+  return compareSync(password, this.password);
+};
 
 const User = mongoose.model('User', userSchema);
 

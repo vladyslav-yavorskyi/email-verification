@@ -1,33 +1,34 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
-const nodemailer = require('nodemailer');
 const generateVerificationCode = require('./src/utils/jwtUtils');
 const sendVefiricationCode = require('./src/services/emailService');
+const authRouter = require('./src/routes/authRoutes');
+const getEnvVariable = require('./src/utils/getEnvVariable');
 
 const app = express();
+const dbURI = getEnvVariable('dbURI');
 const PORT = 3000;
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+(async () => {
+  try {
+    mongoose.Promise = global.Promise;
+    await mongoose.connect(dbURI, { useNewUrlParser: true });
+    console.log('MongoDB connected 🔥');
 
-app.get('/', (req, res) => {
-  const verificationToken = generateVerificationCode('testemail@test.ts');
-  res.send(verificationToken);
-});
+    // hide from hackers what stack we use
+    app.disable('x-powered-by');
 
-app.post('/', async (req, res) => {
-  const { email, name } = req.body;
-  console.log(email, name);
+    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(bodyParser.json());
 
-  const info = sendVefiricationCode(email);
+    app.use('/api', authRouter);
 
-  console.log('Message sent: ', info.messageId);
-  console.log('Preview URL: ', nodemailer.getTestMessageUrl(info));
-
-  res.send('Email was sent!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Listening http://localhost:${PORT}`);
-});
+    app.listen(PORT, () => {
+      console.log(`Listening http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    throw error;
+  }
+})();
