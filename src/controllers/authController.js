@@ -23,7 +23,7 @@ const register = async (req, res) => {
       isVerificated: false,
     }).save();
 
-    const newToken = await new Token({
+    await new Token({
       email,
       verificationCode,
     }).save();

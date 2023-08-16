@@ -2,8 +2,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-const generateVerificationCode = require('./src/utils/jwtUtils');
-const sendVefiricationCode = require('./src/services/emailService');
 const authRouter = require('./src/routes/authRoutes');
 const getEnvVariable = require('./src/utils/getEnvVariable');
 

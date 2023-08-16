@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { compareSync } = require('bcryptjs');
+const { compareSync, hashSync } = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.pre('save', function () {
+  if (this.isModified('password')) {
+    this.password = hashSync(this.password, 10);
+  }
+});
 
 // custom validator for userSchema; check if user exist or not
 userSchema.statics.doesNotExist = async function (field) {
